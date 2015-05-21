@@ -67,6 +67,7 @@ void help ( char *prog_name ) {
   fprintf(stderr, "\t-X <read alignment maximum fraction gap cutoff; default = %f>\n", DEF_READ_GAP_FRAC_CUTOFF );
   fprintf(stderr, "\t-z <use a mask. N will replace adapters>\n");
   fprintf(stderr, "\t-k <max length of read output; default = no output trimming>\n");
+  fprintf(stderr, "\t-K <pad reads less than max with N and # (if -k provided); default = no padding>\n");
   fprintf(stderr, "Optional Arguments for Merging:\n" );
   fprintf(stderr, "\t-y <maximum quality score in output ((phred 33) default = '%c' )>\n", maximum_quality );
   fprintf(stderr, "\t-g <print overhang when adapters are present and stripped (use this if reads are different length)>\n");
@@ -154,6 +155,7 @@ int main( int argc, char* argv[] ) {
   int min_ol_reads = DEF_OL2MERGE_READS;
   unsigned short int min_read_len =DEF_MIN_READ_LEN;
   unsigned short int max_out_len = MAX_SEQ_LEN;
+  bool pad_to_max = false;
   float min_match_adapter_frac = DEF_MIN_MATCH_ADAPTER;
   float min_match_reads_frac = DEF_MIN_MATCH_READS;
   float max_mismatch_adapter_frac = DEF_MAX_MISMATCH_ADAPTER;
@@ -177,7 +179,7 @@ int main( int argc, char* argv[] ) {
     help(argv[0]);
   }
   int req_args = 0;
-  while( (ich=getopt( argc, argv, "f:r:1:2:3:4:q:A:s:y:B:O:E:x:M:N:L:o:m:b:w:W:p:P:X:Q:t:e:Z:n:k:6ghz" )) != -1 ) {
+  while( (ich=getopt( argc, argv, "f:r:1:2:3:4:q:A:s:y:B:O:E:x:M:N:L:o:m:b:w:W:p:P:X:Q:t:e:Z:n:k:K6ghz" )) != -1 ) {
     switch( ich ) {
 
     //REQUIRED ARGUMENTS
@@ -274,6 +276,9 @@ int main( int argc, char* argv[] ) {
     case 'k':
       max_out_len = atoi(optarg);
       break;
+    case 'K':
+      pad_to_max = true;
+      break;
 
       //OPTIONAL MERGING ARGUMENTS
     case 'y' :
@@ -357,8 +362,7 @@ int main( int argc, char* argv[] ) {
    * Loop over all of the reads
    */
   while(next_fastqs( ffq, rfq, sqp, p64 )){ //returns false when done
-    update_spinner(num_pairs++);
-
+    update_spinner(num_pairs++); 
     AlnAln *faaln, *raaln, *fraln;
 
     //save a copy of the original sequences/qualities first
@@ -559,10 +563,7 @@ int main( int argc, char* argv[] ) {
             strlen(sqp->rseq) >= min_read_len &&
             strlen(sqp->rqual) >= min_read_len){
           if(max_out_len < MAX_SEQ_LEN){
-                 sqp->fseq[max_out_len] = '\0';
-                 sqp->rseq[max_out_len] = '\0';
-                 sqp->fqual[max_out_len] = '\0';
-                 sqp->rqual[max_out_len] = '\0';
+	    set_length(sqp,max_out_len,pad_to_max);
           }
           write_fastq(ffqw, sqp->fid, sqp->fseq, sqp->fqual);
           write_fastq(rfqw, sqp->rid, sqp->rseq, sqp->rqual);
@@ -630,10 +631,7 @@ int main( int argc, char* argv[] ) {
             strlen(sqp->rseq) >= min_read_len &&
             strlen(sqp->rqual) >= min_read_len){
           if(max_out_len < MAX_SEQ_LEN){
-                 sqp->fseq[max_out_len] = '\0';
-                 sqp->rseq[max_out_len] = '\0';
-                 sqp->fqual[max_out_len] = '\0';
-                 sqp->rqual[max_out_len] = '\0';
+	    set_length(sqp,max_out_len,pad_to_max);
           }
           write_fastq(ffqw, sqp->fid, sqp->fseq, sqp->fqual);
           write_fastq(rfqw, sqp->rid, sqp->rseq, sqp->rqual);

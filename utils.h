@@ -90,6 +90,7 @@ bool adapter_trim(SQP sqp, size_t min_ol_adapter,
     unsigned short max_mismatch_reads[MAX_SEQ_LEN+1],
     char adj_q_cut,
     bool use_mask);
+void set_length(SQP sqp, int length, bool pad);
 
 #ifndef max
   #define max( a, b ) ( ((a) > (b)) ? (a) : (b) )
