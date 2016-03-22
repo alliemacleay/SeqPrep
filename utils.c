@@ -1168,3 +1168,57 @@ inline void rev_qual( char q[], int len ) {
     q[len-(i+1)] = tmp_q;
   }
 }
+
+void set_length( SQP sqp, int length, bool pad){
+  if(length < MAX_SEQ_LEN){
+    sqp->fseq[length] = '\0';
+    sqp->rseq[length] = '\0';
+    sqp->fqual[length] = '\0';
+    sqp->rqual[length] = '\0';
+  }
+  if(pad){
+    char pc = 'N';
+    int ci=0;
+    int fill=-1;
+    // pad the read with 'N'
+    if (sqp->flen < length){
+      for(ci=sqp->flen;ci < length; ci++){
+        if( fill < 0 ){
+          // find the old end of string
+          if( sqp->fseq[ci] == '\0' ){
+            fill=ci;
+            sqp->fseq[ci]=pc;
+          }
+        }else{
+          sqp->fseq[ci]=pc;
+        }
+      }
+      // pad the qscore with '#'
+      pc = '#';
+      for(ci=fill;ci < length; ci++){
+        sqp->fqual[ci]=pc;
+      }
+    }
+    // pad the read with 'N'
+    if (sqp->rlen < length){
+      pc = 'N';
+      fill=-1;
+      for(ci=sqp->rlen;ci < length; ci++){
+        if( fill < 0 ){
+          // find the old end of string
+          if( sqp->rseq[ci] == '\0' ){
+            fill=ci;
+            sqp->rseq[ci]=pc;
+          }
+        }else{
+          sqp->rseq[ci]=pc;
+        }
+      }
+      pc = '#';
+      // pad the qscore with '#'
+      for(ci=fill;ci < length; ci++){
+        sqp->rqual[ci]=pc;
+      }
+    }
+  }
+}
