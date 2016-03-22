@@ -362,7 +362,7 @@ int main( int argc, char* argv[] ) {
    * Loop over all of the reads
    */
   while(next_fastqs( ffq, rfq, sqp, p64 )){ //returns false when done
-    update_spinner(num_pairs++); 
+    //update_spinner(num_pairs++); 
     AlnAln *faaln, *raaln, *fraln;
 
     //save a copy of the original sequences/qualities first
